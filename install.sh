@@ -2,6 +2,16 @@
 SH_PATH=$(cd "$(dirname "$0")";pwd)
 cd ${SH_PATH}
 
+input_var(){
+    echo "输入变量(input_var)。。。"
+    read -p "请输入你的应用名称：" IBM_APP_NAME
+    echo "应用名称：${IBM_APP_NAME}"
+    read -p "请输入你的应用内存大小(默认256)：" IBM_MEM_SIZE
+    if [ -z "${IBM_MEM_SIZE}" ];then
+        IBM_MEM_SIZE=256
+    fi
+}
+
 create_mainfest_file(){
     echo "进行配置。。。"
     read -p "请输入你的应用名称：" IBM_APP_NAME
@@ -16,7 +26,7 @@ create_mainfest_file(){
     WSPATH=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 16)
     echo "生成随机WebSocket路径：${WSPATH}"
     
-    cat >  ${SH_PATH}/IBMYes/v2ray-cloudfoundry/manifest.yml  << EOF
+    cat >  ${SH_PATH}/${IBM_APP_NAME}/v2ray-cloudfoundry/manifest.yml  << EOF
     applications:
     - path: .
       name: ${IBM_APP_NAME}
@@ -24,7 +34,7 @@ create_mainfest_file(){
       memory: ${IBM_MEM_SIZE}M
 EOF
 
-    cat >  ${SH_PATH}/IBMYes/v2ray-cloudfoundry/v2ray/config.json  << EOF
+    cat >  ${SH_PATH}/${IBM_APP_NAME}/v2ray-cloudfoundry/v2ray/config.json  << EOF
     {
         "inbounds": [
             {
@@ -59,9 +69,9 @@ EOF
 
 clone_repo(){
     echo "进行初始化。。。"
-	rm -rf IBMYes
-    git clone https://github.com/CCChieh/IBMYes
-    cd IBMYes
+	rm -rf ${IBM_APP_NAME}
+    git clone https://github.com/CCChieh/IBMYes ${IBM_APP_NAME}
+    cd ${IBM_APP_NAME}
     git submodule update --init --recursive
     cd v2ray-cloudfoundry/v2ray
     # Upgrade V2Ray to the latest version
@@ -88,15 +98,15 @@ clone_repo(){
     rm latest-v2ray.zip
     
     chmod 0755 ./*
-    cd ${SH_PATH}/IBMYes/v2ray-cloudfoundry
+    cd ${SH_PATH}/${IBM_APP_NAME}/v2ray-cloudfoundry
     echo "初始化完成。"
 }
 
 install(){
     echo "进行安装。。。"
-    cd ${SH_PATH}/IBMYes/v2ray-cloudfoundry
+    cd ${SH_PATH}/${IBM_APP_NAME}/v2ray-cloudfoundry
     ibmcloud target --cf
-    echo "N"|ibmcloud cf install
+    ibmcloud cf install
     ibmcloud cf push
     echo "安装完成。"
     echo "生成的随机 UUID：${UUID}"
@@ -104,11 +114,11 @@ install(){
     VMESSCODE=$(base64 -w 0 << EOF
     {
       "v": "2",
-      "ps": "ibmyes",
-      "add": "ibmyes.us-south.cf.appdomain.cloud",
+      "ps": "${IBM_APP_NAME}",
+      "add": "${IBM_APP_NAME}.us-south.cf.appdomain.cloud",
       "port": "443",
       "id": "${UUID}",
-      "aid": "4",
+      "aid": "64",
       "net": "ws",
       "type": "none",
       "host": "",
@@ -122,6 +132,7 @@ EOF
 
 }
 
+input_var
 clone_repo
 create_mainfest_file
 install

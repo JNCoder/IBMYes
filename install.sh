@@ -102,7 +102,7 @@ install(){
     cd ${SH_PATH}/${IBM_APP_NAME}/v2ray-cloudfoundry
     ibmcloud target --cf
     ibmcloud cf install
-    ibmcloud cf push
+    ibmcloud cf push -f ./manifest.yml
     echo "安装完成。"
     echo "生成的随机 UUID：${UUID}"
     echo "生成的随机 WebSocket路径：${WSPATH}"

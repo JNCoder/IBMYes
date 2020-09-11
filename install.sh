@@ -32,6 +32,7 @@ create_mainfest_file(){
       name: ${IBM_APP_NAME}
       random-route: true
       memory: ${IBM_MEM_SIZE}M
+      buildpack: https://github.com/cloudfoundry/python-buildpack.git
 EOF
 
     cat >  ${SH_PATH}/${IBM_APP_NAME}/v2ray-cloudfoundry/v2ray/config.json  << EOF
